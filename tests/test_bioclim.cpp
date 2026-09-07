@@ -132,27 +132,27 @@ TEST_CASE("BIO15 - Precipitation Seasonality", "[bioclim]") {
 }
 
 TEST_CASE("BIO16 - Precipitation of Wettest Quarter", "[bioclim]") {
-    // Wettest quarter by pr: start 9 → mean pr(10,11,12) = 11.0
+    // Wettest quarter by pr: start 9 → sum pr(10,11,12) = 33.0
     auto bio = compute_bioclim(make_test_block());
-    CHECK_THAT(bio.bio16(0), WithinAbs(11.0f, 1e-3f));
+    CHECK_THAT(bio.bio16(0), WithinAbs(33.0f, 1e-3f));
 }
 
 TEST_CASE("BIO17 - Precipitation of Driest Quarter", "[bioclim]") {
-    // Driest quarter by pr: start 0 → mean pr(1,2,3) = 2.0
+    // Driest quarter by pr: start 0 → sum pr(1,2,3) = 6.0
     auto bio = compute_bioclim(make_test_block());
-    CHECK_THAT(bio.bio17(0), WithinAbs(2.0f, 1e-3f));
+    CHECK_THAT(bio.bio17(0), WithinAbs(6.0f, 1e-3f));
 }
 
 TEST_CASE("BIO18 - Precipitation of Warmest Quarter", "[bioclim]") {
-    // Warmest quarter by tas: start 9 → mean pr(10,11,12) = 11.0
+    // Warmest quarter by tas: start 9 → sum pr(10,11,12) = 33.0
     auto bio = compute_bioclim(make_test_block());
-    CHECK_THAT(bio.bio18(0), WithinAbs(11.0f, 1e-3f));
+    CHECK_THAT(bio.bio18(0), WithinAbs(33.0f, 1e-3f));
 }
 
 TEST_CASE("BIO19 - Precipitation of Coldest Quarter", "[bioclim]") {
-    // Coldest quarter by tas: start 0 → mean pr(1,2,3) = 2.0
+    // Coldest quarter by tas: start 0 → sum pr(1,2,3) = 6.0
     auto bio = compute_bioclim(make_test_block());
-    CHECK_THAT(bio.bio19(0), WithinAbs(2.0f, 1e-3f));
+    CHECK_THAT(bio.bio19(0), WithinAbs(6.0f, 1e-3f));
 }
 
 TEST_CASE("BIO03 is NoData when BIO07 is zero", "[bioclim]") {
@@ -264,16 +264,16 @@ TEST_CASE("Offload: BIO01/BIO12 match expected values", "[bioclim][offload]") {
 
 TEST_CASE("Offload: quarter-based variables match expected values", "[bioclim][offload]") {
     auto bio = compute_bioclim(make_test_block());
-    // Wettest/warmest quarter starts at month 9 → mean tas = 11, mean pr = 11
+    // Wettest/warmest quarter starts at month 9 → mean tas = 11, sum pr = 33
     CHECK_THAT(bio.bio08(0), WithinAbs(11.0f, 1e-3f));
     CHECK_THAT(bio.bio10(0), WithinAbs(11.0f, 1e-3f));
-    CHECK_THAT(bio.bio16(0), WithinAbs(11.0f, 1e-3f));
-    CHECK_THAT(bio.bio18(0), WithinAbs(11.0f, 1e-3f));
-    // Driest/coldest quarter starts at month 0 → mean tas = 2, mean pr = 2
+    CHECK_THAT(bio.bio16(0), WithinAbs(33.0f, 1e-3f));
+    CHECK_THAT(bio.bio18(0), WithinAbs(33.0f, 1e-3f));
+    // Driest/coldest quarter starts at month 0 → mean tas = 2, sum pr = 6
     CHECK_THAT(bio.bio09(0), WithinAbs(2.0f, 1e-3f));
     CHECK_THAT(bio.bio11(0), WithinAbs(2.0f, 1e-3f));
-    CHECK_THAT(bio.bio17(0), WithinAbs(2.0f, 1e-3f));
-    CHECK_THAT(bio.bio19(0), WithinAbs(2.0f, 1e-3f));
+    CHECK_THAT(bio.bio17(0), WithinAbs(6.0f, 1e-3f));
+    CHECK_THAT(bio.bio19(0), WithinAbs(6.0f, 1e-3f));
 }
 
 TEST_CASE("Offload: NaN inputs produce NaN outputs", "[bioclim][offload]") {

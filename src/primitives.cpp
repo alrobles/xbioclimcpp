@@ -250,4 +250,56 @@ Array1D quarter_mean(const Array2D& A, const IndexArray& starts) {
     return result;
 }
 
+Array1D quarter_sum(const Array2D& A, const IndexArray& starts) {
+    const std::size_t N = A.shape(0);
+    Array1D result = xt::zeros<float>({N});
+    static constexpr std::size_t SENTINEL = std::numeric_limits<std::size_t>::max();
+
+#if defined(XBIOCLIM_USE_OPENMP_OFFLOAD)
+    {
+        const float* __restrict__ A_ptr = A.data();
+        const std::size_t* __restrict__ starts_ptr = starts.data();
+        float* __restrict__ res_ptr = result.data();
+        const std::size_t total = N * 12;
+        static constexpr float NAN_VAL = std::numeric_limits<float>::quiet_NaN();
+#pragma omp target teams distribute parallel for \
+        map(to: A_ptr[0:total], starts_ptr[0:N]) map(from: res_ptr[0:N])
+        for (std::size_t p = 0; p < N; ++p) {
+            const std::size_t i = starts_ptr[p];
+            if (i == SENTINEL) {
+                res_ptr[p] = NAN_VAL;
+            } else {
+                res_ptr[p] = (A_ptr[p * 12 + i % 12]
+                            + A_ptr[p * 12 + (i + 1) % 12]
+                            + A_ptr[p * 12 + (i + 2) % 12]);
+            }
+        }
+    }
+#elif defined(XBIOCLIM_USE_OPENMP)
+#pragma omp parallel for schedule(static)
+    for (std::size_t p = 0; p < N; ++p) {
+        const std::size_t i = starts(p);
+        if (i == SENTINEL) {
+            result(p) = std::numeric_limits<float>::quiet_NaN();
+        } else {
+            result(p) = (A(p, i % 12)
+                       + A(p, (i + 1) % 12)
+                       + A(p, (i + 2) % 12));
+        }
+    }
+#else
+    for (std::size_t p = 0; p < N; ++p) {
+        const std::size_t i = starts(p);
+        if (i == SENTINEL) {
+            result(p) = std::numeric_limits<float>::quiet_NaN();
+        } else {
+            result(p) = (A(p, i % 12)
+                       + A(p, (i + 1) % 12)
+                       + A(p, (i + 2) % 12));
+        }
+    }
+#endif
+    return result;
+}
+
 } // namespace xbioclim

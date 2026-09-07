@@ -74,4 +74,7 @@ IndexArray rolling_quarter_argmin(const Array2D& A);
 /// Mean of the circular 3-month window starting at each pixel's start index
 Array1D quarter_mean(const Array2D& A, const IndexArray& starts);
 
+/// Sum of the circular 3-month window starting at each pixel's start index
+Array1D quarter_sum(const Array2D& A, const IndexArray& starts);
+
 } // namespace xbioclim

@@ -70,13 +70,13 @@ BioBlock compute_bioclim(const ClimateBlock& data) {
     bio.bio10 = quarter_mean(data.tas, warm_q);
     bio.bio11 = quarter_mean(data.tas, cold_q);
 
-    // --- BIO16/17: mean precipitation of wettest/driest quarter ---
-    bio.bio16 = quarter_mean(data.pr, wet_q);
-    bio.bio17 = quarter_mean(data.pr, dry_q);
+    // --- BIO16/17: sum of precipitation of wettest/driest quarter ---
+    bio.bio16 = quarter_sum(data.pr, wet_q);
+    bio.bio17 = quarter_sum(data.pr, dry_q);
 
-    // --- BIO18/19: mean precipitation of warmest/coldest quarter ---
-    bio.bio18 = quarter_mean(data.pr, warm_q);
-    bio.bio19 = quarter_mean(data.pr, cold_q);
+    // --- BIO18/19: sum of precipitation of warmest/coldest quarter ---
+    bio.bio18 = quarter_sum(data.pr, warm_q);
+    bio.bio19 = quarter_sum(data.pr, cold_q);
 
     return bio;
 }

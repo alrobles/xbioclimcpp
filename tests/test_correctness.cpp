@@ -156,14 +156,14 @@ namespace expected_ramp {
     static constexpr float bio14 = 1.0f;
     // BIO15: 100 * pop_SD(1..12) / mean(1..12) = bio04 / 6.5
     static const float bio15 = 100.0f * std::sqrt(143.0f / 12.0f) / 6.5f;
-    // BIO16: mean pr of wettest quarter (start 9 → months 10,11,12) = 11.0
-    static constexpr float bio16 = 11.0f;
-    // BIO17: mean pr of driest quarter (start 0 → months 1,2,3) = 2.0
-    static constexpr float bio17 = 2.0f;
-    // BIO18: mean pr of warmest quarter (start 9) = 11.0
-    static constexpr float bio18 = 11.0f;
-    // BIO19: mean pr of coldest quarter (start 0) = 2.0
-    static constexpr float bio19 = 2.0f;
+    // BIO16: sum pr of wettest quarter (start 9 → months 10,11,12) = 10+11+12 = 33.0
+    static constexpr float bio16 = 33.0f;
+    // BIO17: sum pr of driest quarter (start 0 → months 1,2,3) = 1+2+3 = 6.0
+    static constexpr float bio17 = 6.0f;
+    // BIO18: sum pr of warmest quarter (start 9) = 10+11+12 = 33.0
+    static constexpr float bio18 = 33.0f;
+    // BIO19: sum pr of coldest quarter (start 0) = 1+2+3 = 6.0
+    static constexpr float bio19 = 6.0f;
 } // namespace expected_ramp
 
 // ===========================================================================
@@ -558,15 +558,16 @@ TEST_CASE("correctness: uniform monthly values yield zero seasonality",
     CHECK_THAT(bio.bio12(0), WithinAbs(600.0f, kTolDefault)); // 12*50
     // BIO03: 100 * 10 / 10 = 100
     CHECK_THAT(bio.bio03(0), WithinAbs(100.0f, kTolDefault));
-    // All quarter variables equal to the uniform monthly value
+    // Temperature quarter variables equal to uniform monthly value (mean)
     CHECK_THAT(bio.bio08(0), WithinAbs(15.0f, kTolDefault));
     CHECK_THAT(bio.bio09(0), WithinAbs(15.0f, kTolDefault));
     CHECK_THAT(bio.bio10(0), WithinAbs(15.0f, kTolDefault));
     CHECK_THAT(bio.bio11(0), WithinAbs(15.0f, kTolDefault));
-    CHECK_THAT(bio.bio16(0), WithinAbs(50.0f, kTolDefault));
-    CHECK_THAT(bio.bio17(0), WithinAbs(50.0f, kTolDefault));
-    CHECK_THAT(bio.bio18(0), WithinAbs(50.0f, kTolDefault));
-    CHECK_THAT(bio.bio19(0), WithinAbs(50.0f, kTolDefault));
+    // Precipitation quarter variables are sums of 3 months
+    CHECK_THAT(bio.bio16(0), WithinAbs(150.0f, kTolDefault));
+    CHECK_THAT(bio.bio17(0), WithinAbs(150.0f, kTolDefault));
+    CHECK_THAT(bio.bio18(0), WithinAbs(150.0f, kTolDefault));
+    CHECK_THAT(bio.bio19(0), WithinAbs(150.0f, kTolDefault));
 }
 
 TEST_CASE("correctness: quarter wrap-around (start index 11)",
@@ -578,7 +579,7 @@ TEST_CASE("correctness: quarter wrap-around (start index 11)",
     //   start 0: 100+100+1=201
     //   start 10: 1+100+100=201
     //   start 11: 100+100+100=300  ← maximum
-    // mean(pr at 11,0,1) = (100+100+100)/3 = 100
+    // sum(pr at 11,0,1) = 100+100+100 = 300
     ClimateBlock data;
     data.tas    = xt::ones<float>({std::size_t(1), std::size_t(12)}) * 5.0f;
     data.tasmax = xt::ones<float>({std::size_t(1), std::size_t(12)}) * 6.0f;
@@ -590,8 +591,8 @@ TEST_CASE("correctness: quarter wrap-around (start index 11)",
 
     auto bio = compute_bioclim(data);
 
-    // BIO16 = mean pr of wettest quarter = 100.0
-    CHECK_THAT(bio.bio16(0), WithinAbs(100.0f, kTolDefault));
+    // BIO16 = sum pr of wettest quarter = 300.0
+    CHECK_THAT(bio.bio16(0), WithinAbs(300.0f, kTolDefault));
 }
 
 // ===========================================================================
